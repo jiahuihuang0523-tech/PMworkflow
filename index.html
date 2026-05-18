@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Manager To-Do</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section id="loginView" class="login-view" aria-labelledby="loginTitle">
+      <div class="login-panel">
+        <div class="login-brand">
+          <div class="brand-mark">PM</div>
+          <div>
+            <p class="eyebrow">Property Manager</p>
+            <h1 id="loginTitle">Log In To-Do List</h1>
+          </div>
+        </div>
+        <form id="loginForm" class="login-form">
+          <label>
+            <span>Username</span>
+            <input id="usernameInput" type="text" autocomplete="username" placeholder="admin" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="passwordInput" type="password" autocomplete="current-password" placeholder="123456" required />
+          </label>
+          <p id="loginError" class="login-error" role="alert" hidden>Incorrect username or password</p>
+          <button class="primary-btn" type="submit">Log in</button>
+        </form>
+      </div>
+    </section>
+
+    <main id="todoApp" class="app-shell" hidden>
+      <aside class="sidebar">
+        <section class="brand">
+          <div class="brand-mark">PM</div>
+          <div>
+            <h1>Daily Property Tasks</h1>
+            <p>Task list archived by property address</p>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Task statistics">
+          <div>
+            <strong id="activeCount">0</strong>
+            <span>Active</span>
+          </div>
+          <div>
+            <strong id="doneCount">0</strong>
+            <span>Archived</span>
+          </div>
+        </section>
+
+        <div class="sidebar-heading">
+          <span>Property Address</span>
+        </div>
+        <button id="showAllBtn" class="return-all-btn" type="button">View all active tasks</button>
+        <section class="contractor-nav">
+          <div class="sidebar-heading">
+            <span>Contractor Lists</span>
+          </div>
+          <button id="contractorListBtn" class="contractor-list-btn" type="button">Contractor List</button>
+        </section>
+
+        <label class="search-box">
+          <span>Search property</span>
+          <input id="propertySearch" type="search" placeholder="Enter address keywords..." />
+        </label>
+        <nav id="propertyList" class="property-list" aria-label="Property address list"></nav>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Today</p>
+            <h2 id="workspaceTitle">New To-Do</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="newTaskBtn" class="primary-btn" type="button">+ New Task</button>
+            <button id="logoutBtn" class="secondary-btn" type="button">Log out</button>
+          </div>
+        </header>
+
+        <section id="stepOne" class="panel" aria-labelledby="stepOneTitle">
+          <div class="step-label">Step 1</div>
+          <h3 id="stepOneTitle">Choose task category</h3>
+          <div id="categoryGrid" class="category-grid"></div>
+        </section>
+
+        <section id="stepTwo" class="panel" aria-labelledby="stepTwoTitle">
+          <div class="step-label">Step 2</div>
+          <h3 id="stepTwoTitle">Enter address and task details</h3>
+          <form id="taskForm" class="task-form">
+            <label id="addressField">
+              <span>Property Address</span>
+              <input id="addressInput" type="text" autocomplete="street-address" placeholder="Example: 12 King William St, Adelaide SA" required />
+            </label>
+            <div id="dynamicFields" class="dynamic-fields"></div>
+            <label id="issueField">
+              <span>Issue / Notes</span>
+              <textarea id="issueInput" rows="5" placeholder="Record the item that needs follow-up..." required></textarea>
+            </label>
+            <div class="form-actions">
+              <button id="backToCategoryBtn" class="secondary-btn" type="button">Back</button>
+              <button class="primary-btn" type="submit">Create record</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="task-board">
+          <div class="board-header">
+            <div>
+              <p class="eyebrow">Active Work</p>
+              <h3 id="boardTitle">All active tasks</h3>
+            </div>
+            <div class="board-actions">
+              <button id="deletePropertyBtn" class="danger-btn" type="button">Delete this property</button>
+              <select id="sortSelect" aria-label="Task sorting">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="category">By category</option>
+              </select>
+            </div>
+          </div>
+          <div id="taskList" class="task-list"></div>
+        </section>
+      </section>
+
+      <aside id="emailTemplatePanel" class="email-template-panel" aria-label="Workflow email template" hidden>
+        <div class="email-panel-header">
+          <div>
+            <p class="eyebrow">Email Template</p>
+            <h3 id="emailTemplateTitle">Select workflow step</h3>
+          </div>
+          <button id="closeEmailTemplateBtn" class="panel-close-btn" type="button" aria-label="Close email template">x</button>
+        </div>
+        <p id="emailTemplateHint">Click any Break Lease, Transfer Lease, Lease Renewal, Move In, or Letting Only progress step to show the recommended email template.</p>
+        <div id="emailTemplateContent" class="email-template-content">
+          <div class="empty-state">No email template</div>
+        </div>
+      </aside>
+    </main>
+
+    <template id="categoryTemplate">
+      <button class="category-card" type="button">
+        <span class="category-icon"></span>
+        <span class="category-name"></span>
+        <span class="category-note"></span>
+      </button>
+    </template>
+
+    <template id="taskTemplate">
+      <article class="task-card">
+        <div class="task-main">
+          <span class="task-category"></span>
+          <h4></h4>
+          <p></p>
+        </div>
+        <div class="finish-control">
+          <label class="finish-check">
+            <input type="checkbox" />
+            <span>Finish task</span>
+          </label>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
