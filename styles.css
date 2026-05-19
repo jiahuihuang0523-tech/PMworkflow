@@ -6,12 +6,15 @@
   --surface: #ffffff;
   --soft: #f5f7f8;
   --panel: #eef4f1;
-  --teal: #0f766e;
-  --teal-dark: #0b5e58;
+  --teal: #b88951;
+  --teal-dark: #936c3d;
   --amber: #b7791f;
   --rose: #b44b5f;
   --blue: #2f6f9f;
   --shadow: 0 18px 50px rgba(24, 35, 47, 0.1);
+  --brand-gold: #c48f53;
+  --brand-ink: #050505;
+  --brand-panel: rgba(255, 255, 255, 0.9);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Microsoft YaHei", sans-serif;
@@ -117,6 +120,9 @@ button {
   display: grid;
   grid-template-columns: minmax(280px, 330px) 1fr;
   min-height: 100vh;
+  background:
+    linear-gradient(90deg, rgba(5, 5, 6, 0.22), rgba(5, 5, 6, 0.66)),
+    url("assets/brand/sinova-main-background.png") center / cover no-repeat;
 }
 
 .app-shell.has-email-panel {
@@ -124,20 +130,39 @@ button {
 }
 
 .sidebar {
-  background: rgba(255, 255, 255, 0.86);
-  border-right: 1px solid var(--line);
+  background: rgba(5, 5, 6, 0.78);
+  border-right: 1px solid rgba(196, 143, 83, 0.24);
   padding: 24px;
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  backdrop-filter: blur(18px);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .brand {
   display: flex;
+  flex-direction: column;
   gap: 14px;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 28px;
+}
+
+.brand-logo {
+  display: block;
+  width: min(100%, 230px);
+  height: auto;
+  flex: 0 0 auto;
+  object-fit: contain;
+  clip-path: inset(5px 0 0);
+}
+
+.welcome-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 6px;
 }
 
 .brand-mark {
@@ -161,8 +186,10 @@ button {
 
 .brand h1 {
   font-size: 18px;
+  color: white;
 }
 
+.welcome-copy p,
 .brand p,
 .eyebrow {
   margin: 3px 0 0;
@@ -170,18 +197,51 @@ button {
   font-size: 13px;
 }
 
+.sidebar-logout-btn {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+  padding: 2px 0 0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sidebar-logout-btn:hover {
+  color: var(--rose);
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-rows: 2fr 1fr;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
-.stats-grid div {
-  background: var(--soft);
-  border: 1px solid var(--line);
+.stat-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(196, 143, 83, 0.18);
   border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
   padding: 14px;
+  text-align: left;
+}
+
+.stat-card:first-child,
+.stat-card.is-active:first-child {
+  background: rgba(196, 143, 83, 0.16);
+  border-color: rgba(196, 143, 83, 0.38);
+}
+
+.stat-card:last-child {
+  opacity: 0.72;
+  padding: 10px 14px;
+}
+
+.stat-card.is-active {
+  border-color: rgba(196, 143, 83, 0.48);
+  box-shadow: 0 0 0 3px rgba(196, 143, 83, 0.12);
+  opacity: 1;
 }
 
 .stats-grid strong {
@@ -189,9 +249,13 @@ button {
   font-size: 26px;
 }
 
+.stats-grid .stat-card:last-child strong {
+  font-size: 18px;
+}
+
 .stats-grid span,
 .sidebar-heading {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 13px;
 }
 
@@ -215,35 +279,16 @@ button {
   padding: 9px 12px;
 }
 
-.return-all-btn {
-  width: 100%;
-  border: 1px solid rgba(15, 118, 110, 0.25);
-  border-radius: 8px;
-  background: #edf7f4;
-  color: var(--teal-dark);
-  margin-top: 12px;
-  padding: 11px 12px;
-  text-align: left;
-  font-weight: 800;
-}
-
-.return-all-btn:hover {
-  border-color: rgba(15, 118, 110, 0.48);
-  background: #dff1ed;
-}
-
 .contractor-nav {
-  border-top: 1px solid var(--line);
-  margin-top: 20px;
-  padding-top: 18px;
+  margin-top: 8px;
 }
 
 .contractor-list-btn {
   width: 100%;
-  border: 1px solid rgba(47, 111, 159, 0.25);
+  border: 1px solid rgba(196, 143, 83, 0.28);
   border-radius: 8px;
-  background: #f1f7fb;
-  color: var(--blue);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
   margin-top: 12px;
   padding: 11px 12px;
   text-align: left;
@@ -251,14 +296,38 @@ button {
 }
 
 .contractor-list-btn:hover {
-  border-color: rgba(47, 111, 159, 0.48);
-  background: #e4f0f8;
+  border-color: rgba(196, 143, 83, 0.52);
+  background: rgba(196, 143, 83, 0.14);
 }
 
 .board-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.task-search-box {
+  display: grid;
+  gap: 6px;
+  min-width: min(320px, 42vw);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.task-search-box input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  padding: 10px 12px;
+}
+
+.task-search-box input:focus {
+  border-color: rgba(47, 111, 159, 0.55);
+  box-shadow: 0 0 0 3px rgba(47, 111, 159, 0.12);
+  outline: none;
 }
 
 .danger-btn {
@@ -282,16 +351,16 @@ button {
   display: grid;
   gap: 8px;
   margin-top: 12px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 13px;
   font-weight: 700;
 }
 
 .search-box input {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(196, 143, 83, 0.22);
   border-radius: 8px;
-  background: white;
+  background: rgba(255, 255, 255, 0.92);
   color: var(--ink);
   padding: 11px 12px;
 }
@@ -319,15 +388,15 @@ select:focus {
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: var(--ink);
+  color: rgba(255, 255, 255, 0.84);
   padding: 12px;
   text-align: left;
 }
 
 .property-item:hover,
 .property-item.is-selected {
-  border-color: rgba(15, 118, 110, 0.25);
-  background: #edf7f4;
+  border-color: rgba(196, 143, 83, 0.32);
+  background: rgba(196, 143, 83, 0.14);
 }
 
 .property-item strong,
@@ -336,7 +405,7 @@ select:focus {
 }
 
 .property-item span {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 12px;
   margin-top: 4px;
 }
@@ -346,10 +415,12 @@ select:focus {
   display: grid;
   gap: 18px;
   align-content: start;
+  color: white;
 }
 
 .topbar {
   min-height: 60px;
+  color: white;
 }
 
 .topbar-actions {
@@ -371,12 +442,19 @@ select:focus {
   background: var(--teal-dark);
 }
 
+.sidebar-new-task-btn {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
 .panel,
 .task-board {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--line);
+  background: var(--brand-panel);
+  border: 1px solid rgba(196, 143, 83, 0.16);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  backdrop-filter: blur(12px);
 }
 
 .panel {
@@ -511,6 +589,15 @@ select {
   padding: 16px;
 }
 
+.task-created-by {
+  grid-column: 1 / -1;
+  justify-self: end;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.72;
+}
+
 .task-card.has-progress-panel {
   grid-template-columns: 1fr auto;
 }
@@ -583,6 +670,41 @@ select {
 .progress-toggle:hover {
   border-color: rgba(180, 75, 95, 0.55);
   background: #fdecef;
+}
+
+.progress-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.progress-add-form input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  padding: 10px 12px;
+}
+
+.progress-add-form input:focus {
+  border-color: rgba(15, 118, 110, 0.55);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+  outline: none;
+}
+
+.progress-add-btn {
+  justify-self: stretch;
+  border: 1px dashed rgba(15, 118, 110, 0.45);
+  border-radius: 8px;
+  background: #f3faf7;
+  color: var(--teal-dark);
+  padding: 11px 12px;
+  font-weight: 800;
+}
+
+.progress-add-btn:hover {
+  border-color: rgba(15, 118, 110, 0.68);
+  background: #e7f5f0;
 }
 
 .progress-panel {
@@ -1275,7 +1397,8 @@ select {
   }
 
   .calculation-grid,
-  .contractor-form-grid {
+  .contractor-form-grid,
+  .progress-add-form {
     grid-template-columns: 1fr;
   }
 }

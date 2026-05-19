@@ -34,28 +34,25 @@
     <main id="todoApp" class="app-shell" hidden>
       <aside class="sidebar">
         <section class="brand">
-          <div class="brand-mark">PM</div>
-          <div>
-            <h1>Daily Property Tasks</h1>
-            <p>Task list archived by property address</p>
+          <img class="brand-logo" src="assets/brand/sinova-logo.png" alt="SINOVA Property" />
+          <div class="welcome-copy">
+            <p>Welcome</p>
+            <h1 id="welcomeUserName">admin</h1>
+            <button id="logoutBtn" class="sidebar-logout-btn" type="button">Log out</button>
           </div>
         </section>
 
         <section class="stats-grid" aria-label="Task statistics">
-          <div>
+          <button id="activeStatBtn" class="stat-card is-active" type="button">
             <strong id="activeCount">0</strong>
             <span>Active</span>
-          </div>
-          <div>
+          </button>
+          <button id="archivedStatBtn" class="stat-card" type="button">
             <strong id="doneCount">0</strong>
             <span>Archived</span>
-          </div>
+          </button>
         </section>
-
-        <div class="sidebar-heading">
-          <span>Property Address</span>
-        </div>
-        <button id="showAllBtn" class="return-all-btn" type="button">View all active tasks</button>
+        <button id="newTaskBtn" class="primary-btn sidebar-new-task-btn" type="button">+ New Task</button>
         <section class="contractor-nav">
           <div class="sidebar-heading">
             <span>Contractor Lists</span>
@@ -75,10 +72,6 @@
           <div>
             <p class="eyebrow">Today</p>
             <h2 id="workspaceTitle">New To-Do</h2>
-          </div>
-          <div class="topbar-actions">
-            <button id="newTaskBtn" class="primary-btn" type="button">+ New Task</button>
-            <button id="logoutBtn" class="secondary-btn" type="button">Log out</button>
           </div>
         </header>
 
@@ -115,6 +108,10 @@
               <h3 id="boardTitle">All active tasks</h3>
             </div>
             <div class="board-actions">
+              <label id="taskSearchBox" class="task-search-box" hidden>
+                <span>Search archived history</span>
+                <input id="taskSearchInput" type="search" placeholder="Search keyword..." />
+              </label>
               <button id="deletePropertyBtn" class="danger-btn" type="button">Delete this property</button>
               <select id="sortSelect" aria-label="Task sorting">
                 <option value="newest">Newest first</option>
@@ -163,9 +160,10 @@
             <span>Finish task</span>
           </label>
         </div>
+        <span class="task-created-by"></span>
       </article>
     </template>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
