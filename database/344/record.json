@@ -1,0 +1,57 @@
+{
+  "propertyName": "344",
+  "addressKey": "344",
+  "activeTasks": 1,
+  "archivedTasks": 0,
+  "updatedAt": "2026-07-02T11:40:57.202Z",
+  "record": {
+    "address": "344",
+    "addressKey": "344",
+    "tasks": [
+      {
+        "id": "1987b271-c153-480b-9e42-7fabe1136dce",
+        "categoryId": "break-lease",
+        "categoryName": "Break Lease",
+        "issue": "Break Lease Information\nTenant full name: 3231\nLandlord full name: 234\nBreak lease date / move-out date: 342\nReason for breaking the lease: 123\nProperty address: 344\n\nNext correspondence sequence:\n1. Initial CBS break lease information email to tenant\n2. Landlord notification email\n3. Tenant follow-up email after landlord notification\n4. Break lease fee calculation",
+        "details": {
+          "type": "break_lease_information",
+          "property_address": "344",
+          "tenant_full_name": "3231",
+          "landlord_full_name": "234",
+          "break_lease_date": "342",
+          "reason_for_breaking_lease": "123"
+        },
+        "breakLeaseProgress": [
+          {
+            "id": "tenant_terms_informed",
+            "completed": false,
+            "notes": "",
+            "updatedAt": null
+          },
+          {
+            "id": "landlord_notified",
+            "completed": false,
+            "notes": "",
+            "updatedAt": null
+          },
+          {
+            "id": "tenant_followup_sent",
+            "completed": false,
+            "notes": "",
+            "updatedAt": null
+          },
+          {
+            "id": "break_lease_fee_calculated",
+            "completed": false,
+            "notes": "",
+            "updatedAt": null
+          }
+        ],
+        "createdAt": "2026-07-02T11:25:19.125Z",
+        "createdBy": "Property Manager",
+        "completedAt": null,
+        "customProgress": []
+      }
+    ]
+  }
+}

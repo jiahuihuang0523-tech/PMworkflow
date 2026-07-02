@@ -1,0 +1,27 @@
+{
+  "propertyName": "02-07-2026 Daily Work",
+  "addressKey": "02 07 2026 daily work",
+  "activeTasks": 1,
+  "archivedTasks": 0,
+  "updatedAt": "2026-07-02T11:40:57.201Z",
+  "record": {
+    "address": "02-07-2026 Daily Work",
+    "addressKey": "02 07 2026 daily work",
+    "tasks": [
+      {
+        "id": "01942a40-ca2c-4d85-86ca-5b0553bd317c",
+        "categoryId": "daily-task",
+        "categoryName": "Daily Task",
+        "issue": "安排inspection",
+        "details": {
+          "type": "daily_task",
+          "daily_work_date": "02-07-2026",
+          "archive_name": "02-07-2026 Daily Work"
+        },
+        "createdAt": "2026-07-02T11:40:30.050Z",
+        "createdBy": "Property Manager",
+        "completedAt": null
+      }
+    ]
+  }
+}

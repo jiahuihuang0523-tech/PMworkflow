@@ -25,11 +25,11 @@ import {
 } from './src/modules/new-task/index.js';
 import { contractorTypes } from './src/modules/contractor-list/contractor-types.js';
 import { createContractorListModule } from './src/modules/contractor-list/contractor-list.js';
-import { createLoginModule } from './src/modules/login/login.js';
 import { createNewTaskModule } from './src/modules/new-task/task-form.js';
 
 const storageKey = "property-manager-daily-tasks";
 const contractorStorageKey = "property-manager-contractors";
+const defaultCreatedBy = "Property Manager";
 const state = {
   activeView: "tasks",
   taskListMode: "active",
@@ -41,6 +41,7 @@ const state = {
   expandedTaskId: null,
   expandedContractorTypeId: null,
   selectedContractorTypeId: null,
+  selectedTaskId: null,
   selectedEmailTaskId: null,
   selectedEmailStepId: null,
   records: loadRecords(),
@@ -48,14 +49,6 @@ const state = {
 };
 
 const elements = {
-  loginView: document.querySelector("#loginView"),
-  todoApp: document.querySelector("#todoApp"),
-  loginForm: document.querySelector("#loginForm"),
-  usernameInput: document.querySelector("#usernameInput"),
-  passwordInput: document.querySelector("#passwordInput"),
-  loginError: document.querySelector("#loginError"),
-  logoutBtn: document.querySelector("#logoutBtn"),
-  welcomeUserName: document.querySelector("#welcomeUserName"),
   activeCount: document.querySelector("#activeCount"),
   doneCount: document.querySelector("#doneCount"),
   activeStatBtn: document.querySelector("#activeStatBtn"),
@@ -82,6 +75,7 @@ const elements = {
   taskSearchInput: document.querySelector("#taskSearchInput"),
   deletePropertyBtn: document.querySelector("#deletePropertyBtn"),
   taskList: document.querySelector("#taskList"),
+  taskDetailPanel: document.querySelector("#taskDetailPanel"),
   emailTemplatePanel: document.querySelector("#emailTemplatePanel"),
   closeEmailTemplateBtn: document.querySelector("#closeEmailTemplateBtn"),
   emailTemplateTitle: document.querySelector("#emailTemplateTitle"),
@@ -91,8 +85,6 @@ const elements = {
   categoryTemplate: document.querySelector("#categoryTemplate"),
   taskTemplate: document.querySelector("#taskTemplate"),
 };
-
-const loginModule = createLoginModule({ elements });
 
 const { renderCategories, renderTaskForm, buildTaskPayload } = createNewTaskModule({
   state,
@@ -120,9 +112,18 @@ const { renderContractorLists, renderMaintenanceContractorPicker } = createContr
   escapeHtml,
 });
 
-loginModule.setupLogin();
 renderCategories();
 render();
+loadRecordsFromDatabase();
+setInterval(loadRecordsFromDatabase, 5000);
+
+window.addEventListener("storage", (event) => {
+  if (event.key !== storageKey) return;
+
+  state.records = loadRecords();
+  syncRecordsToDatabase();
+  render();
+});
 
 elements.activeStatBtn.addEventListener("click", () => {
   state.activeView = "tasks";
@@ -131,6 +132,7 @@ elements.activeStatBtn.addEventListener("click", () => {
   state.selectedContractorTypeId = null;
   state.selectedCategory = null;
   state.expandedTaskId = null;
+  state.selectedTaskId = null;
   state.selectedEmailTaskId = null;
   state.selectedEmailStepId = null;
   elements.taskForm.reset();
@@ -145,6 +147,7 @@ elements.archivedStatBtn.addEventListener("click", () => {
   state.selectedContractorTypeId = null;
   state.selectedCategory = null;
   state.expandedTaskId = null;
+  state.selectedTaskId = null;
   state.selectedEmailTaskId = null;
   state.selectedEmailStepId = null;
   elements.taskForm.reset();
@@ -168,6 +171,7 @@ elements.contractorListBtn.addEventListener("click", () => {
   state.selectedCategory = null;
   state.expandedTaskId = null;
   state.selectedContractorTypeId = null;
+  state.selectedTaskId = null;
   state.selectedEmailTaskId = null;
   state.selectedEmailStepId = null;
   elements.taskForm.reset();
@@ -182,6 +186,7 @@ elements.newTaskBtn.addEventListener("click", () => {
   state.selectedContractorTypeId = null;
   state.selectedCategory = null;
   state.expandedTaskId = null;
+  state.selectedTaskId = null;
   state.selectedEmailTaskId = null;
   state.selectedEmailStepId = null;
   state.taskSearchQuery = "";
@@ -227,6 +232,9 @@ elements.deletePropertyBtn.addEventListener("click", () => {
 
   state.records = state.records.filter((record) => record !== selectedRecord);
   state.selectedAddress = "all";
+  state.selectedTaskId = null;
+  state.selectedEmailTaskId = null;
+  state.selectedEmailStepId = null;
   saveRecords();
   render();
 });
@@ -253,7 +261,7 @@ elements.taskForm.addEventListener("submit", (event) => {
     outgoingProgress: payload.outgoingProgress,
     lettingOnlyProgress: payload.lettingOnlyProgress,
     createdAt: new Date().toISOString(),
-    createdBy: loginModule.getCurrentUserName(),
+    createdBy: defaultCreatedBy,
     completedAt: null,
   };
 
@@ -270,6 +278,7 @@ elements.taskForm.addEventListener("submit", (event) => {
     state.selectedAddress = address;
   }
 
+  state.selectedTaskId = task.id;
   elements.taskForm.reset();
   state.selectedCategory = null;
   renderTaskForm();
@@ -282,6 +291,10 @@ function render() {
   renderCounts();
   renderProperties();
   if (state.activeView === "contractors") {
+    if (elements.taskDetailPanel) {
+      elements.taskDetailPanel.innerHTML =
+        '<div class="empty-state">Select a contractor type above to view contacts.</div>';
+    }
     renderContractorLists();
     renderEmailTemplatePanel();
     return;
@@ -333,6 +346,9 @@ function renderProperties() {
       state.taskListMode = "property";
       state.selectedContractorTypeId = null;
       state.selectedAddress = record.address;
+      state.selectedTaskId = null;
+      state.selectedEmailTaskId = null;
+      state.selectedEmailStepId = null;
       showStep("closed");
       render();
     });
@@ -344,6 +360,9 @@ function renderProperties() {
 function renderTasks() {
   elements.workspaceTitle.textContent = "Daily Property Tasks";
   elements.sortSelect.hidden = false;
+  if (elements.taskDetailPanel) {
+    elements.taskDetailPanel.innerHTML = "";
+  }
   const showingArchivedHistory =
     state.selectedAddress === "all" && state.taskListMode === "archived";
   let tasksToShow = showingArchivedHistory
@@ -370,83 +389,118 @@ function renderTasks() {
         ? "No active tasks right now"
         : "No history for this property yet";
     elements.taskList.innerHTML = '<div class="empty-state">' + message + '</div>';
+    renderTaskDetail(null);
     return;
   }
 
-  sortTasks(tasksToShow).forEach(({ record, task }) => {
+  const sortedTasks = sortTasks(tasksToShow);
+  if (!sortedTasks.some(({ task }) => task.id === state.selectedTaskId)) {
+    state.selectedTaskId = sortedTasks[0].task.id;
+  }
+
+  sortedTasks.forEach(({ record, task }) => {
     const category = categories.find((item) => item.id === task.categoryId);
-    const node = elements.taskTemplate.content.firstElementChild.cloneNode(true);
     const isCompleted = Boolean(task.completedAt);
-    const isExpanded = state.expandedTaskId === task.id;
     const progressConfig = getProgressConfig(task);
-    const hasProgressPanel = Boolean(progressConfig) || getCustomProgress(task).length > 0 || isExpanded;
-
-    node.classList.toggle("is-completed", isCompleted);
-    node.classList.toggle("has-progress-panel", hasProgressPanel && isExpanded);
+    const summary = getTaskProgressSummary(task, progressConfig);
+    const node = document.createElement("button");
+    node.type = "button";
+    node.className = `task-summary-card${task.id === state.selectedTaskId ? " is-selected" : ""}${isCompleted ? " is-completed" : ""}`;
     node.style.borderLeftColor = category?.color || "#0f766e";
-    node.querySelector(".task-category").textContent = isCompleted
-      ? task.categoryName + " - Archived"
-      : task.categoryName + " - Active";
-    node.querySelector("h4").textContent = record.address;
-    node.querySelector("p").textContent = task.issue + "\nCreated: " + formatDate(task.createdAt) +
-      (isCompleted ? "\nCompleted: " + formatDate(task.completedAt) : "");
-    node.querySelector(".task-created-by").textContent = "Created by " + (task.createdBy || loginModule.defaultUserName);
-
-    const finishControl = node.querySelector(".finish-control");
-
-    if (isCompleted) {
-      finishControl.innerHTML = '<span class="archived-status">Archived</span><button class="reopen-btn" type="button">Reopen</button>';
-      finishControl.querySelector(".reopen-btn").addEventListener("click", () => {
-        task.completedAt = null;
-        saveRecords();
-        render();
-      });
-    } else {
-      const summary = getTaskProgressSummary(task, progressConfig);
-      const progressButtonText = summary.total
-        ? (isExpanded ? "Hide progress" : "View progress") + " - " + summary.completed + "/" + summary.total
-        : "Add progress";
-      finishControl.innerHTML =
-        '<button class="progress-toggle" type="button" aria-expanded="' + isExpanded + '">' +
-          progressButtonText +
-        '</button>' +
-        '<label class="finish-check"><input type="checkbox" /><span>Finish task</span></label>';
-      finishControl.querySelector(".progress-toggle").addEventListener("click", () => {
-        if (!summary.total) {
-          state.expandedTaskId = task.id;
-          state.selectedEmailTaskId = null;
-          state.selectedEmailStepId = null;
-          renderTasks();
-          renderEmailTemplatePanel();
-          return;
-        }
-
-        state.expandedTaskId = isExpanded ? null : task.id;
-        if (isExpanded || !progressConfig) {
-          state.selectedEmailTaskId = null;
-          state.selectedEmailStepId = null;
-        } else {
-          selectFirstWorkflowStep(task, progressConfig);
-        }
-        renderTasks();
-        renderEmailTemplatePanel();
-      });
-      finishControl.querySelector(".finish-check input").addEventListener("change", () => {
-        task.completedAt = new Date().toISOString();
-        state.expandedTaskId = null;
+    node.innerHTML = `
+      <span class="task-summary-main">
+        <span class="task-category">${escapeHtml(isCompleted ? task.categoryName + " - Archived" : task.categoryName + " - Active")}</span>
+        <strong>${escapeHtml(record.address)}</strong>
+        <span class="task-summary-issue">${escapeHtml(getTaskSnippet(task.issue))}</span>
+        <small>${escapeHtml(formatDate(task.createdAt))}${isCompleted ? " - Completed " + escapeHtml(formatDate(task.completedAt)) : ""}</small>
+      </span>
+      <span class="task-summary-progress">${summary.total ? summary.completed + "/" + summary.total : "Details"}</span>
+    `;
+    node.addEventListener("click", () => {
+      state.selectedTaskId = task.id;
+      if (progressConfig) {
+        selectFirstWorkflowStep(task, progressConfig);
+      } else {
         state.selectedEmailTaskId = null;
         state.selectedEmailStepId = null;
-        saveRecords();
-        render();
-        renderEmailTemplatePanel();
-      });
-
-      if (isExpanded) {
-        node.appendChild(renderWorkflowProgressPanel(task, progressConfig));
       }
-    }
+      renderTasks();
+      renderEmailTemplatePanel();
+    });
     elements.taskList.appendChild(node);
   });
+
+  const selectedPair = sortedTasks.find(({ task }) => task.id === state.selectedTaskId);
+  renderTaskDetail(selectedPair);
+}
+
+function renderTaskDetail(pair) {
+  if (!elements.taskDetailPanel) return;
+
+  elements.taskDetailPanel.innerHTML = "";
+
+  if (!pair) {
+    elements.taskDetailPanel.innerHTML = '<div class="empty-state">Select a task above to view progress details</div>';
+    return;
+  }
+
+  const { record, task } = pair;
+  elements.taskDetailPanel.appendChild(renderTaskDetailCard(record, task));
+}
+
+function renderTaskDetailCard(record, task) {
+  const category = categories.find((item) => item.id === task.categoryId);
+  const node = elements.taskTemplate.content.firstElementChild.cloneNode(true);
+  const isCompleted = Boolean(task.completedAt);
+  const progressConfig = getProgressConfig(task);
+  const hasProgressPanel = Boolean(progressConfig) || getCustomProgress(task).length > 0;
+
+  node.classList.add("task-detail-card");
+  node.classList.toggle("is-completed", isCompleted);
+  node.classList.toggle("has-progress-panel", true);
+  node.style.borderLeftColor = category?.color || "#0f766e";
+  node.querySelector(".task-category").textContent = isCompleted
+    ? task.categoryName + " - Archived"
+    : task.categoryName + " - Active";
+  node.querySelector("h4").textContent = record.address;
+  node.querySelector("p").textContent = task.issue + "\nCreated: " + formatDate(task.createdAt) +
+    (isCompleted ? "\nCompleted: " + formatDate(task.completedAt) : "");
+  node.querySelector(".task-created-by").textContent = "Created by " + (task.createdBy || defaultCreatedBy);
+
+  const finishControl = node.querySelector(".finish-control");
+
+  if (isCompleted) {
+    finishControl.innerHTML = '<span class="archived-status">Archived</span><button class="reopen-btn" type="button">Reopen</button>';
+    finishControl.querySelector(".reopen-btn").addEventListener("click", () => {
+      task.completedAt = null;
+      state.selectedTaskId = task.id;
+      saveRecords();
+      render();
+    });
+  } else {
+    finishControl.innerHTML =
+      '<label class="finish-check"><input type="checkbox" /><span>Finish task</span></label>';
+    finishControl.querySelector(".finish-check input").addEventListener("change", () => {
+      task.completedAt = new Date().toISOString();
+      state.selectedTaskId = task.id;
+      state.expandedTaskId = null;
+      state.selectedEmailTaskId = null;
+      state.selectedEmailStepId = null;
+      saveRecords();
+      render();
+      renderEmailTemplatePanel();
+    });
+  }
+
+  if (progressConfig && !state.selectedEmailTaskId && !state.selectedEmailStepId) {
+    selectFirstWorkflowStep(task, progressConfig);
+  }
+
+  if (hasProgressPanel || !isCompleted) {
+    node.appendChild(renderWorkflowProgressPanel(task, progressConfig));
+  }
+
+  return node;
 }
 
 function filterTasksByKeyword(tasks) {
@@ -474,6 +528,14 @@ function filterTasksByKeyword(tasks) {
 
     return searchableText.includes(keyword);
   });
+}
+
+function getTaskSnippet(text) {
+  const normalizedText = String(text || "").replace(/\s+/g, " ").trim();
+  if (normalizedText.length <= 92) {
+    return normalizedText || "No details added";
+  }
+  return normalizedText.slice(0, 89) + "...";
 }
 
 function renderWorkflowProgressPanel(task, progressConfig) {
@@ -1128,21 +1190,24 @@ function renderEmailTemplatePanel() {
   const progressConfig = selectedTask ? getProgressConfig(selectedTask) : null;
   const selectedStep = progressConfig?.steps.find((step) => step.id === state.selectedEmailStepId);
 
+  elements.appShell.classList.add("has-email-panel");
+  elements.emailTemplatePanel.hidden = false;
+
   if (!selectedTask || !selectedStep || !progressConfig) {
-    elements.appShell.classList.remove("has-email-panel");
-    elements.emailTemplatePanel.hidden = true;
-    elements.emailTemplateTitle.textContent = "Select workflow step";
+    elements.emailTemplateTitle.textContent = "Workflow guide";
     elements.emailTemplateHint.textContent =
-      "Click any Break Lease, Transfer Lease, Lease Renewal, Move In, Outgoing, or Letting Only progress step to show the recommended email template.";
-    elements.emailTemplateContent.innerHTML = '<div class="empty-state">No email template</div>';
+      "Select a task progress step to show email templates, action notes, or future training instructions here.";
+    elements.emailTemplateContent.innerHTML =
+      '<div class="empty-state">Instructions and templates will appear here.</div>';
     return;
   }
 
   const template = progressConfig.templates[selectedStep.emailTemplateKey];
   if (!template) {
-    elements.appShell.classList.remove("has-email-panel");
-    elements.emailTemplatePanel.hidden = true;
-    elements.emailTemplateContent.innerHTML = '<div class="empty-state">No email template</div>';
+    elements.emailTemplateTitle.textContent = selectedStep.title;
+    elements.emailTemplateHint.textContent = selectedStep.prompt;
+    elements.emailTemplateContent.innerHTML =
+      '<div class="empty-state">No email template for this step yet. Use this area for internal instructions or future tutorial notes.</div>';
     return;
   }
 
@@ -1150,8 +1215,6 @@ function renderEmailTemplatePanel() {
   const filledTitle = fillTemplatePlaceholders(template.title, templateValues);
   const filledBody = fillTemplatePlaceholders(template.body, templateValues);
 
-  elements.appShell.classList.add("has-email-panel");
-  elements.emailTemplatePanel.hidden = false;
   elements.emailTemplateTitle.textContent = selectedStep.title;
   elements.emailTemplateHint.textContent = template.description;
   elements.emailTemplateContent.innerHTML =
@@ -1879,6 +1942,54 @@ function loadContractors() {
 
 function saveRecords() {
   localStorage.setItem(storageKey, JSON.stringify(state.records));
+  syncRecordsToDatabase();
+}
+
+function loadRecordsFromDatabase() {
+  if (!window.fetch || !window.location.protocol.startsWith("http")) {
+    return;
+  }
+
+  fetch("/api/records")
+    .then((response) => response.ok ? response.json() : null)
+    .then((body) => {
+      if (!body?.ok || !Array.isArray(body.records)) {
+        return;
+      }
+
+      const incoming = JSON.stringify(body.records);
+      const current = JSON.stringify(state.records);
+      if (incoming === current) {
+        return;
+      }
+
+      state.records = body.records.map((record) => ({
+        ...record,
+        addressKey: record.addressKey || createAddressKey(record.address || ""),
+        tasks: Array.isArray(record.tasks) ? record.tasks : [],
+      }));
+      localStorage.setItem(storageKey, JSON.stringify(state.records));
+      render();
+    })
+    .catch(() => {
+      // Static file mode cannot read the database folder; localhost server mode can.
+    });
+}
+
+function syncRecordsToDatabase() {
+  if (!window.fetch) {
+    return;
+  }
+
+  fetch("/api/records", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ records: state.records }),
+  }).catch(() => {
+    // Static file mode cannot write to the database folder; localhost server mode can.
+  });
 }
 
 function saveContractors() {
