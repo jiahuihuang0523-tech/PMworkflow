@@ -7,7 +7,6 @@ import {
   outgoingFields,
   lettingOnlyFields,
   breakLeaseStatusSteps,
-  maintenanceStatusSteps,
   leaseRenewalStatusSteps,
   moveInStatusSteps,
   outgoingStatusSteps,
@@ -91,7 +90,6 @@ const { renderCategories, renderTaskForm, buildTaskPayload } = createNewTaskModu
   elements,
   showStep,
   createBreakLeaseProgress,
-  createMaintenanceProgress,
   createMoveInProgress,
   createOutgoingProgress,
   createLeaseRenewalProgress,
@@ -101,13 +99,10 @@ const { renderCategories, renderTaskForm, buildTaskPayload } = createNewTaskModu
   getDailyWorkDateLabel,
 });
 
-const { renderContractorLists, renderMaintenanceContractorPicker } = createContractorListModule({
+const { renderContractorLists } = createContractorListModule({
   state,
   elements,
-  renderTasks,
-  renderEmailTemplatePanel,
   saveContractors,
-  saveRecords,
   createId,
   escapeHtml,
 });
@@ -254,7 +249,6 @@ elements.taskForm.addEventListener("submit", (event) => {
     issue: payload.issue,
     details: payload.details,
     breakLeaseProgress: payload.breakLeaseProgress,
-    maintenanceProgress: payload.maintenanceProgress,
     transferLeaseProgress: payload.transferLeaseProgress,
     leaseRenewalProgress: payload.leaseRenewalProgress,
     moveInProgress: payload.moveInProgress,
@@ -613,10 +607,6 @@ function renderWorkflowProgressPanel(task, progressConfig) {
 
     if (step.actionType === "calculation" && isSelected) {
       panel.appendChild(renderBreakLeaseCalculationPanel(task, savedStep));
-    }
-
-    if (step.actionType === "contractor-picker" && isSelected) {
-      panel.appendChild(renderMaintenanceContractorPicker(savedStep));
     }
 
     if (step.actionType === "transfer-final-details" && isSelected) {
@@ -1398,10 +1388,6 @@ function isBreakLeaseTask(task) {
   return task.categoryId === "break-lease";
 }
 
-function isMaintenanceTask(task) {
-  return task.categoryId === "maintenance";
-}
-
 function isTransferLeaseTask(task) {
   return task.categoryId === "transfer-lease";
 }
@@ -1423,17 +1409,6 @@ function isLettingOnlyTask(task) {
 }
 
 function getProgressConfig(task) {
-  if (isMaintenanceTask(task)) {
-    return {
-      steps: maintenanceStatusSteps,
-      templates: {},
-      ensure: ensureMaintenanceProgress,
-      progress: (item) => item.maintenanceProgress,
-      getStep: getMaintenanceStep,
-      getTemplateValues: () => ({}),
-    };
-  }
-
   if (isBreakLeaseTask(task)) {
     return {
       steps: breakLeaseStatusSteps,
@@ -1546,37 +1521,6 @@ function addCustomProgress(task, title) {
   saveRecords();
 
   return true;
-}
-
-function ensureMaintenanceProgress(task) {
-  if (!Array.isArray(task.maintenanceProgress)) {
-    task.maintenanceProgress = createMaintenanceProgress();
-  }
-
-  maintenanceStatusSteps.forEach((step) => {
-    if (!task.maintenanceProgress.some((savedStep) => savedStep.id === step.id)) {
-      task.maintenanceProgress.push({
-        id: step.id,
-        completed: false,
-        notes: "",
-        updatedAt: null,
-      });
-    }
-  });
-}
-
-function createMaintenanceProgress() {
-  return maintenanceStatusSteps.map((step) => ({
-    id: step.id,
-    completed: false,
-    notes: "",
-    updatedAt: null,
-  }));
-}
-
-function getMaintenanceStep(task, stepId) {
-  ensureMaintenanceProgress(task);
-  return task.maintenanceProgress.find((step) => step.id === stepId);
 }
 
 function ensureBreakLeaseProgress(task) {
