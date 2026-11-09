@@ -5,4 +5,3 @@ export { leaseRenewalFields, leaseRenewalStatusSteps, leaseRenewalEmailTemplates
 export { moveInFields, moveInStatusSteps, moveInEmailTemplates } from './move-in.js';
 export { outgoingFields, outgoingStatusSteps, outgoingEmailTemplates } from './outgoing.js';
 export { lettingOnlyFields, lettingOnlyStatusSteps, lettingOnlyEmailTemplates } from './letting-only.js';
-export { maintenanceStatusSteps } from './maintenance.js';
