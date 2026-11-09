@@ -1372,7 +1372,7 @@ select {
   }
 
   .email-template-panel {
-    grid-column: 1 / -1;
+    grid-column: 2 / -1;
     position: static;
     height: auto;
     border-left: 0;
@@ -1389,6 +1389,10 @@ select {
   .sidebar {
     position: static;
     height: auto;
+  }
+
+  .email-template-panel {
+    grid-column: 1 / -1;
   }
 
   .category-grid,
