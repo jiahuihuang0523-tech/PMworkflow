@@ -1,5 +1,12 @@
 export const categories = [
   {
+    id: "maintenance",
+    name: "Maintenance",
+    note: "Repairs, quotes, and contractor follow-up",
+    icon: "M",
+    color: "#0f766e",
+  },
+  {
     id: "break-lease",
     name: "Break Lease",
     note: "Break lease process, advertising, and inspections",

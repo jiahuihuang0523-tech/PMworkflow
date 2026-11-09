@@ -3,7 +3,10 @@ import { contractorTypes } from './contractor-types.js';
 export function createContractorListModule({
   state,
   elements,
+  renderTasks,
+  renderEmailTemplatePanel,
   saveContractors,
+  saveRecords,
   createId,
   escapeHtml,
 }) {
@@ -144,7 +147,94 @@ export function createContractorListModule({
     elements.taskList.appendChild(detail);
   }
   
+  function renderMaintenanceContractorPicker(savedStep) {
+    const selectedType = contractorTypes.find((type) => type.id === savedStep.selectedContractorTypeId);
+    const panel = document.createElement("div");
+    panel.className = "maintenance-contractor-panel";
+  
+    if (selectedType) {
+      const contractors = state.contractors[selectedType.id] || [];
+      panel.innerHTML = `
+        <button class="maintenance-contractor-back" type="button">
+          Back to contractor types
+        </button>
+        <button class="maintenance-contractor-detail" type="button">
+          <span class="contractor-image contractor-image-${selectedType.id}" aria-hidden="true">
+            <span>${escapeHtml(selectedType.initials)}</span>
+          </span>
+          <div>
+            <strong>${escapeHtml(selectedType.name)}</strong>
+            <small>${escapeHtml(selectedType.note)}</small>
+          </div>
+        </button>
+      `;
+  
+      const showTypeSelection = () => {
+        savedStep.selectedContractorTypeId = null;
+        savedStep.updatedAt = new Date().toISOString();
+        saveRecords();
+        renderTasks();
+        renderEmailTemplatePanel();
+      };
+  
+      panel.querySelector(".maintenance-contractor-back").addEventListener("click", showTypeSelection);
+      panel.querySelector(".maintenance-contractor-detail").addEventListener("click", showTypeSelection);
+  
+      const list = document.createElement("div");
+      list.className = "maintenance-contractor-contacts";
+  
+      if (!contractors.length) {
+        list.innerHTML = '<div class="empty-state">No contractors added yet</div>';
+      } else {
+        contractors.forEach((contractor) => {
+          const card = document.createElement("article");
+          card.className = "contractor-contact-card";
+          card.innerHTML = `
+            <strong>${escapeHtml(contractor.name)}</strong>
+            <span>Phone: ${escapeHtml(contractor.phone)}</span>
+            <span>Email: ${escapeHtml(contractor.email)}</span>
+          `;
+          list.appendChild(card);
+        });
+      }
+  
+      panel.appendChild(list);
+      return panel;
+    }
+  
+    const grid = document.createElement("div");
+    grid.className = "maintenance-contractor-grid";
+  
+    contractorTypes.forEach((type) => {
+      const contractors = state.contractors[type.id] || [];
+      const button = document.createElement("button");
+      button.className = "maintenance-contractor-option";
+      button.type = "button";
+      button.innerHTML = `
+        <span class="contractor-image contractor-image-${type.id}" aria-hidden="true">
+          <span>${escapeHtml(type.initials)}</span>
+        </span>
+        <span>
+          <strong>${escapeHtml(type.name)}</strong>
+          <small>${contractors.length} contacts</small>
+        </span>
+      `;
+      button.addEventListener("click", () => {
+        savedStep.selectedContractorTypeId = type.id;
+        savedStep.updatedAt = new Date().toISOString();
+        saveRecords();
+        renderTasks();
+        renderEmailTemplatePanel();
+      });
+      grid.appendChild(button);
+    });
+  
+    panel.appendChild(grid);
+    return panel;
+  }
+
   return {
     renderContractorLists,
+    renderMaintenanceContractorPicker,
   };
 }
