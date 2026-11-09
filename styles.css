@@ -806,104 +806,6 @@ select {
   resize: vertical;
 }
 
-.maintenance-contractor-panel {
-  display: grid;
-  gap: 12px;
-  border: 1px solid rgba(47, 111, 159, 0.2);
-  border-radius: 8px;
-  background: #f7fbfd;
-  padding: 14px;
-}
-
-.maintenance-contractor-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.maintenance-contractor-option {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
-  min-height: 128px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--ink);
-  padding: 12px;
-  text-align: left;
-}
-
-.maintenance-contractor-option:hover {
-  border-color: rgba(47, 111, 159, 0.38);
-  background: #f1f7fb;
-}
-
-.maintenance-contractor-option .contractor-image {
-  width: 58px;
-  height: 44px;
-}
-
-.maintenance-contractor-option .contractor-image span {
-  width: 36px;
-  height: 26px;
-  font-size: 12px;
-}
-
-.maintenance-contractor-option strong,
-.maintenance-contractor-option small,
-.maintenance-contractor-detail strong,
-.maintenance-contractor-detail small {
-  display: block;
-}
-
-.maintenance-contractor-option small,
-.maintenance-contractor-detail small {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
-  margin-top: 4px;
-}
-
-.maintenance-contractor-back {
-  justify-self: start;
-  border: 1px solid rgba(47, 111, 159, 0.25);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--blue);
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.maintenance-contractor-back:hover {
-  border-color: rgba(47, 111, 159, 0.55);
-  background: #e4f0f8;
-}
-
-.maintenance-contractor-detail {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--ink);
-  padding: 12px;
-  text-align: left;
-}
-
-.maintenance-contractor-detail:hover {
-  border-color: rgba(47, 111, 159, 0.38);
-  background: #f1f7fb;
-}
-
-.maintenance-contractor-contacts {
-  display: grid;
-  gap: 10px;
-}
-
 .calculation-panel {
   display: grid;
   gap: 14px;
@@ -1424,8 +1326,7 @@ select {
     grid-row: auto;
   }
 
-  .category-grid,
-  .maintenance-contractor-grid {
+  .category-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1450,8 +1351,7 @@ select {
     flex-direction: column;
   }
 
-  .category-grid,
-  .maintenance-contractor-grid {
+  .category-grid {
     grid-template-columns: 1fr;
   }
 
