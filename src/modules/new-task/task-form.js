@@ -13,7 +13,6 @@ export function createNewTaskModule({
   elements,
   showStep,
   createBreakLeaseProgress,
-  createMaintenanceProgress,
   createMoveInProgress,
   createOutgoingProgress,
   createLeaseRenewalProgress,
@@ -147,21 +146,6 @@ export function createNewTaskModule({
         },
         breakLeaseProgress: createBreakLeaseProgress(),
       };
-    }
-  
-    if (categoryId === "maintenance") {
-      const issue = elements.issueInput.value.trim();
-      return issue
-        ? {
-            issue,
-            details: {
-              type: "maintenance_information",
-              property_address: address,
-              issue,
-            },
-            maintenanceProgress: createMaintenanceProgress(),
-          }
-        : null;
     }
   
     if (categoryId === "move-in") {
